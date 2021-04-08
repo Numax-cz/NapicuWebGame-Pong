@@ -5,10 +5,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/styles/local.css">
-    <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@600&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles/index.css">
     <title>Document</title>
 
     <meta itemprop="name" content="NaPicu">
@@ -36,29 +33,100 @@
     <head>
 
     <body>
+        <section id="Box" class="Window">
+            <div class="Box-Table">
+                <div class="GameName">
+                    Hra pro více hráčů
+                </div>
+                <div class="TableGameMode">
+                    <div class="Local">
+                        <div class="InGameName" style="text-align: center;">
+                            Připojit se
+                        </div>
+                        <div class="InputOnline">
+                            <div class="inputclass">
+                                <input type="text" id="inputglobalidex">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="Global">
+                        <div class="InGameName" style="text-align: center;">
+                            Vytvořit hru
+                        </div>
+                        <div class="InputOnline">
+                            <div class="inputclass">
+                                <input type="text" id="idinputglobal">
+                            </div>
+                        </div>
 
-        <section id="root">
-            <canvas id="canvas"></canvas>
+                    </div>
+                </div>
+                <button class="ButtonHelp" id="sessionbtn">
+                    Hrát
+                </button>
+            </div>
+            
+            <div id="UserID">
+                <div class="username" onclick="Show(Account)">
+                    <i>
+                        <img src="/img/user.webp" width="40" height="40">
+                    </i>
+                    <h3 id="clientusername">
+                        Anonymous
+                    </h3>
+
+                </div>
+
+                <div class="help">
+                    <a class="ButtonQuestion" onclick="Show(Help)">
+                        <img src="/img/question.webp" width="35" height="35">
+                    </a>
+                </div>
+            </div>
         </section>
+        <section id="Request" class="Window">
+            <div class="Request-Table">
+                <div class="HelpName">
+                    Pozvánka
+                </div>
+                <div id="RequestMainTable">
+   
+                </div>
+            </div>
+            <div class="ButtonsRequest">
+                <div id="ButtonAccept" class="ButtonHelp">
+                    Příjmout
+                </div>
+                <div id="ButtonDeny" class="ButtonHelp"> 
+                    Odmítnout
+                </div>
+            </div>
+        </section>
+        <section id="Account" class="Window">
+            <div class="Account-Table">
+                <div class="AccountName">
+                    Uživatel
+                </div>
+                <div class="TableAccount">
+                    <div class="UserInf">
+                        <div class="UserName">
+                            <div class="jmenotxt">Uživatelské jméno</div>
+                            <input type="text" id="NameInput" value="Anonymous">
+                        </div>
 
-
+                    </div>
+                </div>
+                <div class="ButtonHelp" onclick="Close(Account); SocketName();">
+                    Ok
+                </div>
+            </div>
+        </section>
     </body>
-
 </html>
 
 
-<script src="/javascript/global/engine.js"></script>
 
-<script src="/javascript/Config.js"></script>
-
-<script src="/javascript/Ground.js"></script>
-
-<script src="/javascript/Background.js"></script>
-
-<script src="/javascript/Player.js"></script>
-
-<script src="/javascript/Ball.js"></script>
-
-<script src="/javascript/Game.js"></script>
-
-
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js'></script>
+<script src="/javascript/localhost/socket.js"> </script>
+<script src="/javascript/page/Help.js"></script>

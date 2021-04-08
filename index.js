@@ -2,14 +2,9 @@ require("dotenv").config();
 const express = require("express");
 const app = express();
 const crypto = require('crypto');
-
-
 const server = app.listen(process.env.PORT, () => {
     console.log("Aplikace běží na portu: " + process.env.PORT);
 });
-
-
-
 function randomString() {
     const size = 5;
     return crypto
@@ -17,16 +12,8 @@ function randomString() {
         .toString('hex')
         .slice(0, size)
 }
-
-
 app.use(express.urlencoded({ extended: false }));
-// app.use(cookieSession({
-//     name: "session",
-//     keys: ['mWcJwD3MBT', 'dV4s9UFpCq']
-// }));
-
 const io = require("socket.io")(server);
-
 app.use(express.static(__dirname + '/public'));
 app.set('view engine', 'ejs');
 
@@ -47,19 +34,13 @@ app.get("/", (req, res) => {
     res.render("index");
 });
 
-app.get("/session", (req, res) => {
-    res.render("session")
-});
 
-
-const clientRooms = {};
 io.on("connection", socket => {
     socket.username = "Anonymous"
     let roomName;
     do {
         roomName = randomString();
     } while (io.sockets.adapter.rooms.get(roomName));
-    clientRooms[socket.id] = roomName;
     socket.join(roomName);
     socket.emit("id", { id: roomName });
 
@@ -69,11 +50,10 @@ io.on("connection", socket => {
         const clients = io.sockets.adapter.rooms.get(data);
 
         if (data !== roomName) {
-            console.log(data + " " + roomName);
             if (clients.size == 1) {
                 for (const id of clients) {
-                    const username = io.sockets.sockets.get(id).username
-                    io.to(id).emit("invite", { username: username, id: id });
+                    // const username = io.sockets.sockets.get(id).username
+                    io.to(id).emit("invite", { username: socket.username, id: socket.id });
                 }
             } else if (clients.size == 2) {
                 //uživatelé již hrajou
@@ -82,12 +62,20 @@ io.on("connection", socket => {
             }
         }
     });
+
     socket.on("accept", data => {
-        console.log(data);
+
+        console.log(data.id + " " + socket.id);
+        // const username = io.sockets.sockets.get(id).username
+
     });
 
     socket.on("deny", data => {
-        console.log(data);
+
+    });
+    socket.on("setusername", data => {
+        socket.username = data.username;
+        socket.emit("getusername", socket.username);
     });
 
 
@@ -117,7 +105,6 @@ io.on("connection", socket => {
         //TODO Nazdar 
     });
 });
-
 
 
 

@@ -5,6 +5,8 @@ const ButtonSend = document.getElementById("sessionbtn");
 //session.ejs
 const RequestWindow = document.getElementById("Request");
 const requestmessage = document.getElementById("RequestMainTable");
+
+const UserNameSetInput = document.getElementById("NameInput");
 //Socket
 socket.on('id', data => {
     Input2.value = data.id;
@@ -34,7 +36,9 @@ socket.on("invite", data => {
     $("#ButtonDeny").click(function () {
         DenyRequest(data);
     });
-
+});
+socket.on("getusername", data => {
+    document.getElementById("clientusername").innerText = data;
 });
 
 $("#sessionbtn").click(function () {
@@ -61,7 +65,9 @@ function DenyRequest(data) {
     socket.emit("deny", { username: data.username, id: data.id });
 }
 
-
+function SocketName() {
+    socket.emit("setusername", {username: UserNameSetInput.value})
+}
 
 
 
