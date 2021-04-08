@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="cs">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/styles/index.css">
+    <title>Document</title>
+
+    <meta itemprop="name" content="NaPicu">
+    <meta name="keywords" content="HTML, CSS, JavaScript">
+    <meta name="author" content="Numax">
+    <link rel="icon" href="https://napicu.eu/favicon.png">
+    <meta itemprop="image" content="https://napicu.eu/logo-meta.png">
+    <meta itemprop="description" content="Ahoj kamaráde! Měl by si se podávat na tuto stránku!">
+
+    <meta property="og:url" content="https://napicu.eu/">
+    <meta property="og:title" content="NaPicu">
+    <meta property="og:description" content="Ahoj kamaráde! Měl by si se podávat na tuto stránku!">
+    <meta property="og:site_name" content="NaPicu">
+    <meta property="og:image" content="https://napicu.eu/logo-meta.png">
+
+    <meta name="twitter:url" content="https://napicu.eu/">
+    <meta name="twitter:title" content="NaPicu">
+    <meta name="twitter:description" content="Ahoj kamaráde! Měl by si se podávat na tuto stránku!">
+    <meta name="twitter:site_name" content="NaPicu">
+    <meta name="twitter:image" content="https://napicu.eu/logo-meta.png">
+
+    <meta name="msapplication-TileColor" content="#f39c12">
+    <meta name="theme-color" content="#f39c12">
+
+    <head>
+
+    <body>
+        <section id="Box" class="Window">
+            <div class="Box-Table">
+                <div class="GameName">
+                    NapicuPong
+                </div>
+                <div class="TableGameMode">
+                    <div class="Local">
+                        <div class="InGameName">
+                            Lokální hra
+                        </div>
+                        <div class="Image">
+                            <img src="/img/monitor.webp" width="120" height="120">
+                        </div>
+                        <div class="Button">
+                            <a href="/local">Hrát!</a>
+                        </div>
+                    </div>
+                    <div class="Global">
+                        <div class="InGameName">
+                            Online hra
+                        </div>
+                        <div class="Image">
+                            <img src="/img/group.webp" width="120" height="120">
+                        </div>
+                        <div class="Button">
+                            <a href="/global">Hrát!</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="UserID">
+                <div class="username" onclick="Show(Account)">
+                    <i>
+                        <img src="/img/user.webp" width="40" height="40">
+                    </i>
+                    <h3>
+                        Anonymous
+                    </h3>
+
+                </div>
+                <div class="help">
+                    <a class="ButtonQuestion" onclick="Show(Help)">
+                        <img src="/img/question.webp" width="35" height="35">
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section id="Help" class="Window">
+            <div class="Help-Table">
+                <div class="HelpName">
+                    Návod
+                </div>
+                <div class="HelpMainTable">
+                    <div id="HelpButton">
+                        <div class="Key">
+                            W
+                        </div>
+                        <div class="HelpButton-text">
+                            Pohyb nahoru
+                        </div>
+                    </div>
+                    <div id="HelpButton">
+                        <div class="Key">
+                            S
+                        </div>
+                        <div class="HelpButton-text">
+                            Pohyb dolu
+                        </div>
+                    </div>
+                    <div id="HelpButton">
+                        <div class="Key">
+                            CTRL
+                        </div>
+                        <h2>+</h2>
+                        <div class="Key">
+                            R
+                        </div>
+                        <div class="HelpButton-text">
+                            Restartuje hru
+                        </div>
+                    </div>
+
+                </div>
+                <div class="ButtonHelp" onclick="Close(Help)">
+                    Ok
+                </div>
+
+            </div>
+        </section>
+
+        <section id="Account" class="Window">
+            <div class="Account-Table">
+                <div class="AccountName">
+                    Uživatel
+                </div>
+                <div class="TableAccount">
+                    <div class="UserInf">
+                        <div class="UserName">
+                            <div class="jmenotxt">Uživatelské jméno</div>
+                            <input type="text" id="NameInput" value="Anonymous">
+                        </div>
+
+                    </div>
+                </div>
+                <div class="ButtonHelp" onclick="Close(Account)">
+                    Ok
+                </div>
+            </div>
+        </section>
+
+
+        <section id="Mobile">
+
+        </section>
+
+        <div id="GitHubIcon">
+            <a href="###">
+                <img src="/img/github.webp" width="35" height="35">
+            </a>
+        </div>
+
+
+    </body>
+
+</html>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js'></script>
+<script src="/javascript/page/Help.js"></script>
+<script src="/javascript/page/Usernamechange.js"></script>

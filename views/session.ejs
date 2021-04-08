@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="cs">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/styles/index.css">
+    <title>Document</title>
+
+    <meta itemprop="name" content="NaPicu">
+    <meta name="keywords" content="HTML, CSS, JavaScript">
+    <meta name="author" content="Numax">
+    <link rel="icon" href="https://napicu.eu/favicon.png">
+    <meta itemprop="image" content="https://napicu.eu/logo-meta.png">
+    <meta itemprop="description" content="Ahoj kamaráde! Měl by si se podávat na tuto stránku!">
+
+    <meta property="og:url" content="https://napicu.eu/">
+    <meta property="og:title" content="NaPicu">
+    <meta property="og:description" content="Ahoj kamaráde! Měl by si se podávat na tuto stránku!">
+    <meta property="og:site_name" content="NaPicu">
+    <meta property="og:image" content="https://napicu.eu/logo-meta.png">
+
+    <meta name="twitter:url" content="https://napicu.eu/">
+    <meta name="twitter:title" content="NaPicu">
+    <meta name="twitter:description" content="Ahoj kamaráde! Měl by si se podávat na tuto stránku!">
+    <meta name="twitter:site_name" content="NaPicu">
+    <meta name="twitter:image" content="https://napicu.eu/logo-meta.png">
+
+    <meta name="msapplication-TileColor" content="#f39c12">
+    <meta name="theme-color" content="#f39c12">
+
+    <head>
+
+    <body>
+        <section id="Box" class="Window">
+            <div class="Box-Table">
+                <div class="GameName">
+                    Hra pro více hráčů
+                </div>
+                <div class="TableGameMode">
+                    <div class="Local">
+                        <div class="InGameName" style="text-align: center;">
+                            Připojit se
+                        </div>
+                        <div class="InputOnline">
+                            <div class="inputclass">
+                                <input type="text" id="inputglobalidex">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="Global">
+                        <div class="InGameName" style="text-align: center;">
+                            Vytvořit hru
+                        </div>
+                        <div class="InputOnline">
+                            <div class="inputclass">
+                                <input type="text" id="idinputglobal">
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <button class="ButtonHelp" id="sessionbtn">
+                    Hrát
+                </button>
+            </div>
+            <div id="UserID">
+                <div class="help">
+                    <a class="ButtonQuestion" onclick="Show(Help)">
+                        <img src="/img/question.webp" width="35" height="35">
+                    </a>
+                </div>
+            </div>
+        </section>
+        <section id="Request" class="Window">
+            <div class="Request-Table">
+                <div class="HelpName">
+                    Pozvánka
+                </div>
+                <div id="RequestMainTable">
+   
+                </div>
+            </div>
+            <div class="ButtonsRequest">
+                <div id="ButtonAccept" class="ButtonHelp">
+                    Příjmout
+                </div>
+                <div id="ButtonDeny" class="ButtonHelp"> 
+                    Odmítnout
+                </div>
+            </div>
+        </section>
+    </body>
+</html>
+
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js'></script>
+<script src="/javascript/localhost/socket.js"> </script>
+<script src="/javascript/page/Help.js"></script>
