@@ -19,7 +19,7 @@ class Game {
 
 
             
-        if (MoveKey.Up) {   //Toto nevim předělat
+        if (MoveKey.Up) {  
             Hrac.MoveUp();
         }
         if (MoveKey.Down) {

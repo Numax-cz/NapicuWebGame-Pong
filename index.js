@@ -37,6 +37,7 @@ app.get("/", (req, res) => {
 
 io.on("connection", socket => {
     socket.username = "Anonymous"
+    socket.emit("getusername", socket.username);
     let roomName;
     do {
         roomName = randomString();
@@ -44,15 +45,12 @@ io.on("connection", socket => {
     socket.join(roomName);
     socket.emit("id", { id: roomName });
 
-
-
     socket.on("request", data => {
         const clients = io.sockets.adapter.rooms.get(data);
 
         if (data !== roomName) {
             if (clients.size == 1) {
                 for (const id of clients) {
-                    // const username = io.sockets.sockets.get(id).username
                     io.to(id).emit("invite", { username: socket.username, id: socket.id });
                 }
             } else if (clients.size == 2) {
@@ -64,9 +62,16 @@ io.on("connection", socket => {
     });
 
     socket.on("accept", data => {
+        const dataSocket = io.sockets.sockets.get(data.id);
+        // io.to(data.id).emit("requestAccept", "Kokot příjmul tu mrdku")
 
-        console.log(data.id + " " + socket.id);
-        // const username = io.sockets.sockets.get(id).username
+
+
+        dataSocket.join(roomName);
+        console.log("ROOMKA:   " + roomName);
+
+        console.log(io.sockets.adapter.rooms)
+
 
     });
 
@@ -86,20 +91,7 @@ io.on("connection", socket => {
         } else {
             socket.emit("idcheck", { id: false });
         }
-
-
-
-
-
-
-
     });
-
-
-
-
-
-
 
     socket.on("disconnect", () => {
         //TODO Nazdar 
@@ -110,15 +102,3 @@ io.on("connection", socket => {
 
 
 
-
-
-
-
-
-
-
-
-
-app.post("/api/namechange", (req, res) => {
-    res.json("AHoj")
-});

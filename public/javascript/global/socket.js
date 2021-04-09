@@ -32,14 +32,22 @@ socket.on("invite", data => {
     OpenRequest(data.username);
     $("#ButtonAccept").click(function () {
         AcceptRequest(data);
+        CloseRequest();
     });
     $("#ButtonDeny").click(function () {
         DenyRequest(data);
+        CloseRequest();
     });
 });
 socket.on("getusername", data => {
     document.getElementById("clientusername").innerText = data;
+    document.getElementById("NameInput").value = data;
 });
+
+socket.on("requestAccept", data => {
+    alert(data);
+});
+
 
 $("#sessionbtn").click(function () {
     socket.emit("request", Input1.value);
@@ -52,11 +60,13 @@ $("#inputglobalidex").on("change paste keyup", function () {
 
 //Funkce
 function OpenRequest(name) {
-    const txt = " vás chce pozvat do hry";
+    const txt = " se chce připojit do hry";
     requestmessage.innerText = name + txt;
     RequestWindow.style.transform = "scale(1)";
 }
-
+function CloseRequest() {
+    RequestWindow.style.transform = "scale(0)";
+}
 function AcceptRequest(data) {
     socket.emit("accept", { username: data.username, id: data.id });
 }
@@ -66,7 +76,7 @@ function DenyRequest(data) {
 }
 
 function SocketName() {
-    socket.emit("setusername", {username: UserNameSetInput.value})
+    socket.emit("setusername", { username: UserNameSetInput.value })
 }
 
 
