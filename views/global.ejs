@@ -33,6 +33,9 @@
     <head>
 
     <body>
+        <section id="root">
+            <canvas id="canvas"></canvas>
+        </section>
         <section id="Box" class="Window">
             <div class="Box-Table">
                 <div class="GameName">
@@ -65,7 +68,7 @@
                     Hrát
                 </button>
             </div>
-            
+
             <div id="UserID">
                 <div class="username" onclick="Show(Account)">
                     <i>
@@ -89,14 +92,14 @@
                     Pozvánka
                 </div>
                 <div id="RequestMainTable">
-   
+
                 </div>
             </div>
             <div class="ButtonsRequest">
                 <div id="ButtonAccept" class="ButtonHelp">
                     Příjmout
                 </div>
-                <div id="ButtonDeny" class="ButtonHelp"> 
+                <div id="ButtonDeny" class="ButtonHelp">
                     Odmítnout
                 </div>
             </div>
@@ -120,11 +123,27 @@
             </div>
         </section>
     </body>
+
 </html>
 
 
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 <script src='https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js'></script>
-<script src="/javascript/global/socket.js"> </script>
+<script src="/javascript/global/socket.js"></script>
+
+
+
+<script src="/javascript/global/engine.js"></script>
+
+<script src="/javascript/Config.js"></script>
+
+<script src="/javascript/Background.js"></script>
+
+<script src="/javascript/global/game/Player.js"></script>
+
+<script src="/javascript/global/game/Online.js"></script>
+
+
 <script src="/javascript/page/Help.js"></script>

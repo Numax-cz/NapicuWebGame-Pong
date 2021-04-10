@@ -49,6 +49,7 @@ socket.on("requestAccept", data => {
 });
 
 
+
 $("#sessionbtn").click(function () {
     socket.emit("request", Input1.value);
 });

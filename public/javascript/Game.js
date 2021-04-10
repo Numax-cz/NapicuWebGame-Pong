@@ -55,6 +55,7 @@ class Game {
 function Render() {
     Game.Render();
     requestAnimationFrame(Render);
+
 }
 
 window.onload = () => {

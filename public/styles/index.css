@@ -15,9 +15,19 @@ body{
     display: flex;
     justify-content: center;
     align-items: center;
-    
+}
+body[game="true"]{
+    align-content: space-around;
+    color: #ffffff;
+    display: grid;
+    justify-content: center;
 }
 
+canvas {
+    height: 84vh;
+    background-color: #ffffff;
+    margin-top: 3%;
+}
 .Window{
     min-height: 51vh;
     width: 47%;
@@ -266,4 +276,8 @@ body{
 #ButtonDeny,
 #ButtonAccept{
     margin-top: 20%;
+}
+
+#root{
+    display: none;
 }
