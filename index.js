@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const app = express();
 const crypto = require('crypto');
+
 const server = app.listen(process.env.PORT, () => {
     console.log("Aplikace běží na portu: " + process.env.PORT);
 });
@@ -71,12 +72,12 @@ io.on("connection", socket => {
     socket.on("accept", data => {
         const dataSocket = io.sockets.sockets.get(data.id);
         dataSocket.leave(dataSocket.ActivityRoom);
-        socket.Player = "player_1";
-        dataSocket.Player = "player_2";
+        socket.Player = "Hrac1";
+        dataSocket.Player = "Hrac2";
         dataSocket.ActivityRoom = roomName;
         dataSocket.join(roomName);
         io.to(roomName).emit("Ready");
-        setInterval(BallPush, 33);
+        setInterval(BallPush, 10);
     });
 
 
@@ -111,13 +112,13 @@ io.on("connection", socket => {
     class Ball {
         static x = okno.ln / 2;
         static y = okno.lp / 2;
-    
+
         static Size = 12;
         static velX = this.x;
         static velY = this.y;
         static SpeedX = this.Random();
         static SpeedY = this.Random();
-
+        static BallColor = "#ecf0f1";
         static Render() {
             this.Collision();
             this.Move();
@@ -127,7 +128,6 @@ io.on("connection", socket => {
             this.velX -= this.SpeedX;
             this.velY += 0;
         }
-
         static Collision() {
             if ((this.velX + this.Size) >= okno.ln) {
                 this.Start(); //Player? Game Over - -
@@ -142,11 +142,10 @@ io.on("connection", socket => {
                 this.SpeedY = -(this.SpeedY);
             }
         }
-        
         static Reverse() {
             this.SpeedY = - (this.SpeedY);
         }
-        
+
         static Random() {
             return Math.round(Math.random()) ? 7 : -7;
         }
@@ -159,16 +158,63 @@ io.on("connection", socket => {
         }
     }
 
-    
-    function BallPush() {
-        Ball.Render();
-        io.to(roomName).emit("BallMove", { x: Ball.velX, y: Ball.velY });
+    class Player {
+        static MoveSpeed = 0.65;
+        static heigth = 210;
+        static width = 10;
+        constructor(x) {
+            this.y = okno.lp / 2 - Player.heigth / 2;
+            this.x = x;
+            this.speed = 0;
+        }
+
+        Render() {
+            this.Move();
+        }
+
+        Move() {
+            this.y += this.speed;
+            this.speed *= 0.92;
+        }
+
+        MoveUp() {
+            this.speed -= Player.MoveSpeed;
+            console.log("MOVE UP ");
+        }
+        MoveDown() {
+            this.speed += Player.MoveSpeed;
+        }
+
     }
 
 
 
 
+    function BallPush() {
+        Ball.Render();
+        io.to(roomName).emit("BallMove", { velX: Ball.velX, velY: Ball.velY, size: Ball.Size, color: Ball.BallColor });
+        PlayerPush();
+    }
 
+
+    const Hrac = new Player(100);
+    const Hrac2 = new Player(okno.ln - 100);
+
+
+    socket.on("PlayerMoveUp", data => {
+
+    });
+
+    socket.on("PlayerMoveDown", data => {
+        
+    });
+
+    function PlayerPush() {
+        Hrac.Render();
+        Hrac2.Render();
+        io.to(roomName).emit("PlayerMove",
+            { x: Hrac.x, y: Hrac.y, x2: Hrac2.x, y2: Hrac2.y, heigth: Player.heigth, width: Player.width });
+    }
 
 
 
@@ -185,6 +231,7 @@ io.on("connection", socket => {
         //TODO Nazdar 
     });
 });
+
 
 
 

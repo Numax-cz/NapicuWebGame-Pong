@@ -8,22 +8,57 @@ ctx.canvas.width = okno.ln;
 
 class Game {
     static Render() {
+        
+        
+        
         Background.Render();
         Player.Render();
+        Ball.Render();
+        
+        
+        if (MoveKey.Up) {
+            socket.emit("PlayerMoveUp");
+        }
+        if (MoveKey.Down) {
+            socket.emit("PlayerMoveDown");
+        }
+        
+        
+
     }
 }
 
 
-function Render() {
+function StartRender() {
     Game.Render();
-    requestAnimationFrame(Start);
+    requestAnimationFrame(StartRender);
 }
 
 socket.on("Ready", data => {
     Start();
-    Render();
+    StartRender();
 });
 
-socket.on("BallMove", data => {
-    console.log(data);
-});
+
+
+
+
+
+MoveKey = {
+    Up: false,
+    Down: false,
+    key: (e) => {
+        const key = (e.type == "keydown") ? true : false;
+        switch (e.keyCode) {
+            case 87:
+                MoveKey.Up = key;
+                break;
+            case 83:
+                MoveKey.Down = key;
+                break
+        }
+    }
+}
+
+window.addEventListener("keydown", MoveKey.key);
+window.addEventListener("keyup", MoveKey.key);
