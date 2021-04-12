@@ -28,7 +28,9 @@ class Player {
     }
 
     static Get() {
+        socket.emit("PlayerUpdate");
         socket.on("PlayerMove", data => {
+
             Player.heigth = data.heigth;
             Player.width = data.width;
             Player.Player1X = data.x;

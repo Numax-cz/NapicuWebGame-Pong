@@ -35,10 +35,13 @@ function StartRender() {
 }
 
 socket.on("Ready", data => {
+    socket.emit("PingStart");
+});
+
+socket.on("START", data => {
     Start();
     StartRender();
 });
-
 
 
 

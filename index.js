@@ -38,6 +38,13 @@ app.get("/", (req, res) => {
 });
 
 
+
+var Players = []
+
+
+
+
+
 io.on("connection", socket => {
     socket.username = "Anonymous"
     socket.emit("getusername", socket.username);
@@ -158,6 +165,7 @@ io.on("connection", socket => {
         }
     }
 
+
     class Player {
         static MoveSpeed = 0.65;
         static heigth = 210;
@@ -168,10 +176,6 @@ io.on("connection", socket => {
             this.speed = 0;
         }
 
-        Render() {
-            this.Move();
-        }
-
         Move() {
             this.y += this.speed;
             this.speed *= 0.92;
@@ -179,7 +183,6 @@ io.on("connection", socket => {
 
         MoveUp() {
             this.speed -= Player.MoveSpeed;
-            console.log("MOVE UP ");
         }
         MoveDown() {
             this.speed += Player.MoveSpeed;
@@ -187,6 +190,7 @@ io.on("connection", socket => {
 
     }
 
+    var Hrac;
 
 
 
@@ -196,24 +200,43 @@ io.on("connection", socket => {
         PlayerPush();
     }
 
-
-    const Hrac = new Player(100);
-    const Hrac2 = new Player(okno.ln - 100);
-
-
-    socket.on("PlayerMoveUp", data => {
-
+    socket.on("PingStart", () => {
+        const ZoneX = (socket.Player == "Hrac1") ? 100 : (okno.ln - 100);
+        Hrac = new Player(ZoneX);
+        Players[socket.id] = Hrac; //Nevímw
+        io.to(roomName).emit("START");
     });
 
-    socket.on("PlayerMoveDown", data => {
-        
+
+
+
+    socket.on("PlayerUpdate", () => {
+        Hrac.Move();
     });
+
+    socket.on("PlayerMoveUp", () => {
+        Hrac.MoveUp();    
+    });
+
+    socket.on("PlayerMoveDown", () => {
+        Hrac.MoveDown();
+    });
+
+
+
 
     function PlayerPush() {
-        Hrac.Render();
-        Hrac2.Render();
-        io.to(roomName).emit("PlayerMove",
-            { x: Hrac.x, y: Hrac.y, x2: Hrac2.x, y2: Hrac2.y, heigth: Player.heigth, width: Player.width });
+        let PlayersID = io.sockets.adapter.rooms.get(socket.ActivityRoom) //Todo varování když je více 
+        const PlayersArray = Array.from(PlayersID);
+        if (PlayersArray.length == 2) {
+            let Hrac1ID = PlayersArray[0]; //100
+            let Hrac2ID = PlayersArray[1]; //1700
+            let dataSocket1 = io.sockets.sockets.get(Hrac1ID); //socket.Player: Hrac1
+            let dataSocket2 = io.sockets.sockets.get(Hrac2ID); //socket.Player: Hrac2
+            let Hrac1 = Players[Hrac1ID];
+            let Hrac2 = Players[Hrac2ID];
+            io.to(roomName).emit("PlayerMove", { x: Hrac1.x, y: Hrac1.y, x2: Hrac2.x, y2: Hrac2.y, heigth: Player.heigth, width: Player.width });
+        }
     }
 
 
