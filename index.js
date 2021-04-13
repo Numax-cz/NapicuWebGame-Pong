@@ -39,8 +39,8 @@ app.get("/", (req, res) => {
 
 
 
-var Players = []
-
+// var Players = []
+var Players = new Map()
 
 
 
@@ -84,7 +84,7 @@ io.on("connection", socket => {
         dataSocket.ActivityRoom = roomName;
         dataSocket.join(roomName);
         io.to(roomName).emit("Ready");
-        setInterval(BallPush, 10);
+
     });
 
 
@@ -111,6 +111,7 @@ io.on("connection", socket => {
 
 
     // InGame    
+    var Hrac;
     const okno = {
         lp: 1000,
         ln: 1800
@@ -127,13 +128,14 @@ io.on("connection", socket => {
         static SpeedY = this.Random();
         static BallColor = "#ecf0f1";
         static Render() {
+            this.PlayerCollision();
             this.Collision();
             this.Move();
         }
 
         static Move() {
             this.velX -= this.SpeedX;
-            this.velY += 0;
+            this.velY += this.SpeedY;
         }
         static Collision() {
             if ((this.velX + this.Size) >= okno.ln) {
@@ -149,12 +151,23 @@ io.on("connection", socket => {
                 this.SpeedY = -(this.SpeedY);
             }
         }
+
+        static PlayerCollision() {
+
+            if ((this.velX - this.Size) <= (Hrac.x + Player.width)) {
+                if ((this.velX + this.Size) >= (Hrac.x - Player.heigth)) {
+                    this.Reverse();
+                }
+            }
+        }
+
         static Reverse() {
             this.SpeedY = - (this.SpeedY);
+            this.SpeedX = - (this.SpeedX);
         }
 
         static Random() {
-            return Math.round(Math.random()) ? 7 : -7;
+            return Math.round(Math.random()) ? 4 : -4;
         }
 
         static Start() {
@@ -190,7 +203,6 @@ io.on("connection", socket => {
 
     }
 
-    var Hrac;
 
 
 
@@ -203,7 +215,9 @@ io.on("connection", socket => {
     socket.on("PingStart", () => {
         const ZoneX = (socket.Player == "Hrac1") ? 100 : (okno.ln - 100);
         Hrac = new Player(ZoneX);
-        Players[socket.id] = Hrac; //Nevímw
+        setInterval(BallPush, 33);
+        console.log("reg");
+        Players.set(socket.id, Hrac);
         io.to(roomName).emit("START");
     });
 
@@ -230,10 +244,9 @@ io.on("connection", socket => {
             let Hrac2ID = PlayersArray[1]; //1700
             let dataSocket1 = io.sockets.sockets.get(Hrac1ID); //socket.Player: Hrac1
             let dataSocket2 = io.sockets.sockets.get(Hrac2ID); //socket.Player: Hrac2
-            let Hrac1 = Players[Hrac1ID];
-            let Hrac2 = Players[Hrac2ID];
+            let Hrac1 = Players.get(Hrac1ID);
+            let Hrac2 = Players.get(Hrac2ID);
             io.to(roomName).emit("PlayerMove", { x: Hrac1.x, y: Hrac1.y, x2: Hrac2.x, y2: Hrac2.y, heigth: Player.heigth, width: Player.width });
-
         }
     }
 
@@ -249,30 +262,9 @@ io.on("connection", socket => {
 
 
     socket.on("disconnect", () => {
-        
-
-
-
-
-
-
-        // if (Players[socket.id]) {
-        //     Players.splice(socket.id, 0);
-        // }
-
-
-        let i = Players.indexOf(socket.id);
-        // Players.splice(i, 1);
-
-        console.log(i);
+        Players.delete(socket.id);
     });
 });
-
-
-let contacts = new Map()
-
-
-contacts.set('socketID', { x: "10", y: "D" })
 
 
 
