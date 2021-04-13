@@ -215,15 +215,12 @@ io.on("connection", socket => {
     });
 
     socket.on("PlayerMoveUp", () => {
-        Hrac.MoveUp();    
+        Hrac.MoveUp();
     });
 
     socket.on("PlayerMoveDown", () => {
         Hrac.MoveDown();
     });
-
-
-
 
     function PlayerPush() {
         let PlayersID = io.sockets.adapter.rooms.get(socket.ActivityRoom) //Todo varování když je více 
@@ -236,6 +233,7 @@ io.on("connection", socket => {
             let Hrac1 = Players[Hrac1ID];
             let Hrac2 = Players[Hrac2ID];
             io.to(roomName).emit("PlayerMove", { x: Hrac1.x, y: Hrac1.y, x2: Hrac2.x, y2: Hrac2.y, heigth: Player.heigth, width: Player.width });
+
         }
     }
 
@@ -251,10 +249,30 @@ io.on("connection", socket => {
 
 
     socket.on("disconnect", () => {
-        //TODO Nazdar 
+        
+
+
+
+
+
+
+        // if (Players[socket.id]) {
+        //     Players.splice(socket.id, 0);
+        // }
+
+
+        let i = Players.indexOf(socket.id);
+        // Players.splice(i, 1);
+
+        console.log(i);
     });
 });
 
+
+let contacts = new Map()
+
+
+contacts.set('socketID', { x: "10", y: "D" })
 
 
 
