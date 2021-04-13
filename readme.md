@@ -1,9 +1,9 @@
-## NapicuWebGame - Pong
+# NapicuWebGame - Pong
 
 # Projekt není dokončen!
 
 
-# Použité balíčky
+## Použité balíčky
 * crypto@1.0.1
 * dotenv@8.2.0
 * ejs@3.1.6
