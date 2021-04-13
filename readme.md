@@ -1,6 +1,6 @@
 # NapicuWebGame - Pong
 
-# Projekt není dokončen!
+## Projekt není dokončen!
 
 
 ## Použité balíčky
