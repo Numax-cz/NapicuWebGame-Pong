@@ -4,8 +4,9 @@ const Input2 = document.getElementById("idinputglobal");
 const ButtonSend = document.getElementById("sessionbtn");
 //session.ejs
 const RequestWindow = document.getElementById("Request");
+const RequestWindow2 = document.getElementById("RequestDeny");
 const requestmessage = document.getElementById("RequestMainTable");
-
+const requestmessageDeny = document.getElementById("RequestDenyMainTable");
 const UserNameSetInput = document.getElementById("NameInput");
 //Socket
 socket.on('id', data => {
@@ -44,11 +45,9 @@ socket.on("getusername", data => {
     document.getElementById("NameInput").value = data;
 });
 
-socket.on("requestAccept", data => {
-    alert(data);
+socket.on("AcceptDeny", data => {
+    OpenRequestDeny(data.username);
 });
-
-
 
 $("#sessionbtn").click(function () {
     socket.emit("request", Input1.value);
@@ -58,6 +57,10 @@ $("#inputglobalidex").on("change paste keyup", function () {
     socket.emit("idcheck", Input1.value);
 });
 
+$("#ButtonOkDeny").click(function () {
+    CloseRequestDeny();
+});
+
 
 //Funkce
 function OpenRequest(name) {
@@ -65,9 +68,21 @@ function OpenRequest(name) {
     requestmessage.innerText = name + txt;
     RequestWindow.style.transform = "scale(1)";
 }
+
+function OpenRequestDeny(name) {
+    const txt = " nepříjmul vaší pozvánku";
+    requestmessageDeny.innerText = name + txt;
+    RequestWindow2.style.transform = "scale(1)";
+}
+
 function CloseRequest() {
     RequestWindow.style.transform = "scale(0)";
 }
+
+function CloseRequestDeny() {
+    RequestWindow2.style.transform = "scale(0)";
+}
+
 function AcceptRequest(data) {
     socket.emit("accept", { username: data.username, id: data.id });
 }

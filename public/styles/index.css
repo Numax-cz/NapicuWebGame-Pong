@@ -151,14 +151,21 @@ canvas {
     transition: .1s ease-in-out;
     z-index: 20;
 }
+#RequestDeny,
 #Request{
     position: absolute;
-    transform: scale(0);
-    transition: .1s ease-in-out;
     z-index: 20;
+    transition: .1s ease-in-out;
     width: 35%;
     min-height: 40vh;
 }
+#RequestDeny{
+    transform: scale(0);
+}
+#Request{
+    transform: scale(0);
+}
+
 
 #Mobile{
 
@@ -258,8 +265,8 @@ canvas {
 .ButtonsRequest{
     display: flex;
 }
-/* session Buttons */
-#RequestMainTable{
+
+.RequestMainTable{
     text-align: center;
     padding: 2%;
     margin-top: 5%;

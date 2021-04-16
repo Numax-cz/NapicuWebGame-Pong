@@ -28,12 +28,9 @@ class Player {
     }
 
     static Get() {
-        setInterval(PlayerUpdate, 33);
-        function PlayerUpdate() {
-            socket.emit("PlayerUpdate");
-        }
 
-
+        socket.emit("PlayerUpdate");
+ 
         socket.on("PlayerMove", data => {
             Player.heigth = data.heigth;
             Player.width = data.width;

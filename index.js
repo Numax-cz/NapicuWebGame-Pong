@@ -40,7 +40,8 @@ app.get("/", (req, res) => {
 
 
 // var Players = []
-var Players = new Map()
+var Players = new Map();
+var Balls = new Map();
 
 
 
@@ -64,8 +65,6 @@ io.on("connection", socket => {
             if (clients.size == 1) {
                 for (const id of clients) {
                     io.to(id).emit("invite", { username: socket.username, id: socket.id });
-
-
                 }
             } else if (clients.size == 2) {
                 //uživatelé již hrajou
@@ -74,7 +73,7 @@ io.on("connection", socket => {
             }
         }
     });
-    // io.to(data.id).emit("requestAccept", "Kokot příjmul tu mrdku")
+
 
     socket.on("accept", data => {
         const dataSocket = io.sockets.sockets.get(data.id);
@@ -87,12 +86,8 @@ io.on("connection", socket => {
 
     });
 
-
-
-
-
     socket.on("deny", data => {
-
+        io.to(data.id).emit("AcceptDeny", { username: socket.username });
     });
 
     socket.on("setusername", data => {
@@ -116,11 +111,14 @@ io.on("connection", socket => {
         lp: 1000,
         ln: 1800
     }
+    const PlayerPos = {
+        Player1: 100,
+        Player2: okno.ln - 100,
+    }
 
     class Ball {
         static x = okno.ln / 2;
         static y = okno.lp / 2;
-
         static Size = 12;
         static velX = this.x;
         static velY = this.y;
@@ -128,11 +126,10 @@ io.on("connection", socket => {
         static SpeedY = this.Random();
         static BallColor = "#ecf0f1";
         static Render() {
-            this.PlayerCollision();
+            // this.PlayerCollision();
             this.Collision();
             this.Move();
         }
-
         static Move() {
             this.velX -= this.SpeedX;
             this.velY += this.SpeedY;
@@ -153,7 +150,6 @@ io.on("connection", socket => {
         }
 
         static PlayerCollision() {
-
             if ((this.velX - this.Size) <= (Hrac.x + Player.width)) {
                 if ((this.velX + this.Size) >= (Hrac.x - Player.heigth)) {
                     this.Reverse();
@@ -206,17 +202,20 @@ io.on("connection", socket => {
 
 
 
-    function BallPush() {
+    function BallPush(socketid) {
         Ball.Render();
-        io.to(roomName).emit("BallMove", { velX: Ball.velX, velY: Ball.velY, size: Ball.Size, color: Ball.BallColor });
-        PlayerPush();
+        Ball.PlayerCollision();
+        //todo kontrola
+        io.to(socketid).emit("BallMove", { velX: Ball.velX, velY: Ball.velY, size: Ball.Size, color: Ball.BallColor });
+        PlayerPush(socketid);
     }
 
     socket.on("PingStart", () => {
-        const ZoneX = (socket.Player == "Hrac1") ? 100 : (okno.ln - 100);
+        const ZoneX = (socket.Player == "Hrac1") ? PlayerPos.Player1 : PlayerPos.Player2;
         Hrac = new Player(ZoneX);
-        setInterval(BallPush, 33);
-        console.log("reg");
+        //todo ball = new ball() > socket.AcrivityRoom
+        setInterval(function () { BallPush(socket.ActivityRoom); }, 33);
+
         Players.set(socket.id, Hrac);
         io.to(roomName).emit("START");
     });
@@ -226,6 +225,8 @@ io.on("connection", socket => {
 
     socket.on("PlayerUpdate", () => {
         Hrac.Move();
+
+
     });
 
     socket.on("PlayerMoveUp", () => {
@@ -236,7 +237,15 @@ io.on("connection", socket => {
         Hrac.MoveDown();
     });
 
-    function PlayerPush() {
+    function PlayerPush(socketid) {
+        var Hrac1 = GETPlayersDataSocketRoom().Hrac1;
+        var Hrac2 = GETPlayersDataSocketRoom().Hrac2;
+        io.to(socketid).emit("PlayerMove", { x: Hrac1.x, y: Hrac1.y, x2: Hrac2.x, y2: Hrac2.y, heigth: Player.heigth, width: Player.width });
+    }
+
+
+
+    function GETPlayersDataSocketRoom() {
         let PlayersID = io.sockets.adapter.rooms.get(socket.ActivityRoom) //Todo varování když je více 
         const PlayersArray = Array.from(PlayersID);
         if (PlayersArray.length == 2) {
@@ -246,13 +255,14 @@ io.on("connection", socket => {
             let dataSocket2 = io.sockets.sockets.get(Hrac2ID); //socket.Player: Hrac2
             let Hrac1 = Players.get(Hrac1ID);
             let Hrac2 = Players.get(Hrac2ID);
-            io.to(roomName).emit("PlayerMove", { x: Hrac1.x, y: Hrac1.y, x2: Hrac2.x, y2: Hrac2.y, heigth: Player.heigth, width: Player.width });
+            return {
+                Hrac1: Hrac1,
+                Hrac2: Hrac2
+            }
+        } else { //Todo error
+            return false;
         }
     }
-
-
-
-
 
 
 
@@ -265,6 +275,11 @@ io.on("connection", socket => {
         Players.delete(socket.id);
     });
 });
+
+
+
+
+
 
 
 
