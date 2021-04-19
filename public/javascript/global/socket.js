@@ -29,7 +29,6 @@ socket.on("idcheck", data => {
 });
 
 socket.on("invite", data => {
-
     OpenRequest(data.username);
     $("#ButtonAccept").click(function () {
         AcceptRequest(data);
@@ -40,6 +39,7 @@ socket.on("invite", data => {
         CloseRequest();
     });
 });
+
 socket.on("getusername", data => {
     document.getElementById("clientusername").innerText = data;
     document.getElementById("NameInput").value = data;
@@ -47,6 +47,13 @@ socket.on("getusername", data => {
 
 socket.on("AcceptDeny", data => {
     OpenRequestDeny(data.username);
+});
+
+socket.on("PlayerLeft", data => {
+    Game.Player = false;
+    ctx.clearRect(0, 0, okno.ln, okno.lp);
+    Input1.value = "";
+    End();
 });
 
 $("#sessionbtn").click(function () {
@@ -60,8 +67,6 @@ $("#inputglobalidex").on("change paste keyup", function () {
 $("#ButtonOkDeny").click(function () {
     CloseRequestDeny();
 });
-
-
 //Funkce
 function OpenRequest(name) {
     const txt = " se chce připojit do hry";
@@ -94,8 +99,6 @@ function DenyRequest(data) {
 function SocketName() {
     socket.emit("setusername", { username: UserNameSetInput.value })
 }
-
-
 
 ZakazatOdeslani();
 function PovolitOdeslani() {

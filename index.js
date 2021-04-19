@@ -55,7 +55,7 @@ io.on("connection", socket => {
     } while (io.sockets.adapter.rooms.get(roomName));
     socket.join(roomName);
     socket.ActivityRoom = roomName; //Nevím nevím
-    socket.Player = "player_1"
+    socket.Player = "none"
     socket.emit("id", { id: roomName });
 
     socket.on("request", data => {
@@ -83,7 +83,6 @@ io.on("connection", socket => {
         dataSocket.ActivityRoom = roomName;
         dataSocket.join(roomName);
         io.to(roomName).emit("Ready");
-
     });
 
     socket.on("deny", data => {
@@ -107,6 +106,7 @@ io.on("connection", socket => {
 
     // InGame    
     var Hrac;
+    var Koule;
     const okno = {
         lp: 1000,
         ln: 1800
@@ -117,24 +117,29 @@ io.on("connection", socket => {
     }
 
     class Ball {
-        static x = okno.ln / 2;
-        static y = okno.lp / 2;
-        static Size = 12;
-        static velX = this.x;
-        static velY = this.y;
-        static SpeedX = this.Random();
-        static SpeedY = this.Random();
-        static BallColor = "#ecf0f1";
-        static Render() {
+        constructor() {
+            this.x = okno.ln / 2;
+            this.y = okno.lp / 2;
+            this.Size = 12;
+            this.velX = this.x;
+            this.velY = this.y;
+            this.SpeedX = this.Random();
+            this.SpeedY = this.Random();
+            this.BallColor = "#ecf0f1";
+        }
+
+
+
+        Render() {
             // this.PlayerCollision();
             this.Collision();
             this.Move();
         }
-        static Move() {
+        Move() {
             this.velX -= this.SpeedX;
             this.velY += this.SpeedY;
         }
-        static Collision() {
+        Collision() {
             if ((this.velX + this.Size) >= okno.ln) {
                 this.Start(); //Player? Game Over - -
             }
@@ -149,31 +154,24 @@ io.on("connection", socket => {
             }
         }
 
-        static PlayerCollision() {
-            if ((this.velX - this.Size) <= (Hrac.x + Player.width)) {
-                if ((this.velX + this.Size) >= (Hrac.x - Player.heigth)) {
-                    this.Reverse();
-                }
-            }
-        }
 
-        static Reverse() {
+
+        Reverse() {
             this.SpeedY = - (this.SpeedY);
             this.SpeedX = - (this.SpeedX);
         }
 
-        static Random() {
+        Random() {
             return Math.round(Math.random()) ? 4 : -4;
         }
 
-        static Start() {
+        Start() {
             this.velX = this.x;
             this.velY = this.y;
             this.SpeedX = this.Random();
             this.SpeedY = this.Random();
         }
     }
-
 
     class Player {
         static MoveSpeed = 0.65;
@@ -202,21 +200,22 @@ io.on("connection", socket => {
 
 
 
-    function BallPush(socketid) {
-        Ball.Render();
-        Ball.PlayerCollision();
-        //todo kontrola
-        io.to(socketid).emit("BallMove", { velX: Ball.velX, velY: Ball.velY, size: Ball.Size, color: Ball.BallColor });
-        PlayerPush(socketid);
+    function Render(socketid) {
+        if (GetRoomPlayers()) {
+            Koule.Render();
+            let SocketKoule = Balls.get(socketid)
+            io.to(socketid).emit("BallMove", { velX: SocketKoule.velX, velY: SocketKoule.velY, size: SocketKoule.Size, color: SocketKoule.BallColor });
+            PlayerPush(socketid);
+        }
     }
-
+    var intervatFun;
     socket.on("PingStart", () => {
         const ZoneX = (socket.Player == "Hrac1") ? PlayerPos.Player1 : PlayerPos.Player2;
         Hrac = new Player(ZoneX);
-        //todo ball = new ball() > socket.AcrivityRoom
-        setInterval(function () { BallPush(socket.ActivityRoom); }, 33);
-
+        Koule = new Ball();
         Players.set(socket.id, Hrac);
+        Balls.set(socket.ActivityRoom, Koule);
+        intervatFun = setInterval(function () { Render(socket.ActivityRoom); }, 33);
         io.to(roomName).emit("START");
     });
 
@@ -224,31 +223,39 @@ io.on("connection", socket => {
 
 
     socket.on("PlayerUpdate", () => {
-        Hrac.Move();
-
-
+        if (GetRoomPlayers()) {
+            Hrac.Move();
+        }
     });
 
     socket.on("PlayerMoveUp", () => {
-        Hrac.MoveUp();
+        if (GetRoomPlayers()) {
+            Hrac.MoveUp();
+        }
     });
 
     socket.on("PlayerMoveDown", () => {
-        Hrac.MoveDown();
+        if (GetRoomPlayers()) {
+            Hrac.MoveDown();
+        }
     });
 
     function PlayerPush(socketid) {
         var Hrac1 = GETPlayersDataSocketRoom().Hrac1;
         var Hrac2 = GETPlayersDataSocketRoom().Hrac2;
-        io.to(socketid).emit("PlayerMove", { x: Hrac1.x, y: Hrac1.y, x2: Hrac2.x, y2: Hrac2.y, heigth: Player.heigth, width: Player.width });
+        if (Hrac1 && Hrac2) {
+            io.to(socketid).emit("PlayerMove", { x: Hrac1.x, y: Hrac1.y, x2: Hrac2.x, y2: Hrac2.y, heigth: Player.heigth, width: Player.width });
+        }
+        // else {
+        //     PlayerLeftGame(socketid);
+        // }
     }
 
 
 
     function GETPlayersDataSocketRoom() {
-        let PlayersID = io.sockets.adapter.rooms.get(socket.ActivityRoom) //Todo varování když je více 
-        const PlayersArray = Array.from(PlayersID);
-        if (PlayersArray.length == 2) {
+        const PlayersArray = GetRoomPlayers();
+        if (PlayersArray) {
             let Hrac1ID = PlayersArray[0]; //100
             let Hrac2ID = PlayersArray[1]; //1700
             let dataSocket1 = io.sockets.sockets.get(Hrac1ID); //socket.Player: Hrac1
@@ -259,24 +266,61 @@ io.on("connection", socket => {
                 Hrac1: Hrac1,
                 Hrac2: Hrac2
             }
-        } else { //Todo error
+        } else {
             return false;
         }
     }
 
+    function GetRoomPlayers() {
+        let PlayersID = io.sockets.adapter.rooms.get(socket.ActivityRoom)
+        if (PlayersID) {
+            let PlayersArray = Array.from(PlayersID);
+            if (PlayersArray.length == 2) {
+                return PlayersArray;
+            } else {
+                return false;
+            }
+        }
+        return false;
+    }
 
+    function GetSocketById(id) {
+        return io.sockets.sockets.get(id);
+    }
 
+    function GetPlayerByRoom() {
+        let PlayersID = io.sockets.adapter.rooms.get(socket.ActivityRoom);
+        if (PlayersID) {
+            return Array.from(io.sockets.adapter.rooms.get(socket.ActivityRoom))[0];
+        } else {
+            return false;
+        }
+    }
 
+    function PlayerLeftGame(socket) {
+        const dataSocket = io.sockets.sockets.get(GetPlayerByRoom());
+        if (dataSocket) {
+            io.to(dataSocket.id).emit("PlayerLeft");
+            GetNewRoom(dataSocket);
+            clearInterval(intervatFun);
+        }
+    }
 
-
-
+    function GetNewRoom(dataSocket) {
+        do {
+            roomName = randomString();
+        } while (io.sockets.adapter.rooms.get(roomName));
+        dataSocket.join(roomName);
+        dataSocket.ActivityRoom = roomName;
+        dataSocket.Player = "none";
+        io.to(dataSocket).emit("id", { id: roomName });
+    }
 
     socket.on("disconnect", () => {
         Players.delete(socket.id);
+        PlayerLeftGame(socket)
     });
 });
-
-
 
 
 

@@ -7,6 +7,7 @@ ctx.canvas.width = okno.ln;
 
 
 class Game {
+    static Player = false;
     static Render() {
         
         
@@ -23,13 +24,17 @@ class Game {
             socket.emit("PlayerMoveDown");
         }
         
-        
+    
 
     }
+
 }
 
 
 function StartRender() {
+    if (!Game.Player) {
+        return;
+    }
     Game.Render();
     requestAnimationFrame(StartRender);
 }
@@ -40,6 +45,7 @@ socket.on("Ready", data => {
 
 socket.on("START", data => {
     Start();
+    Game.Player = true;
     StartRender();
 });
 
