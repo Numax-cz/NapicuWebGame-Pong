@@ -7,13 +7,7 @@ const server = app.listen(process.env.PORT, () => {
     console.log("Aplikace běží na portu: " + process.env.PORT);
 });
 
-function randomString() {
-    const size = 5;
-    return crypto
-        .randomBytes(size)
-        .toString('hex')
-        .slice(0, size)
-}
+
 
 app.use(express.urlencoded({ extended: false }));
 const io = require("socket.io")(server);
@@ -42,7 +36,7 @@ app.get("/", (req, res) => {
 // var Players = []
 var Players = new Map();
 var Balls = new Map();
-
+var PlayersRequest = new Map();
 
 
 
@@ -50,26 +44,32 @@ io.on("connection", socket => {
     socket.username = "Anonymous"
     socket.emit("getusername", socket.username);
     let roomName;
-    do {
-        roomName = randomString();
-    } while (io.sockets.adapter.rooms.get(roomName));
-    socket.join(roomName);
-    socket.ActivityRoom = roomName; //Nevím nevím
-    socket.Player = "none"
-    socket.emit("id", { id: roomName });
+    GetNewRoom(socket);
 
     socket.on("request", data => {
         const clients = io.sockets.adapter.rooms.get(data);
+        for (let i of PlayersRequest.values()) {
+            if (i == socket.id) {
+                io.to(socket.id).emit("ReturnRequestExist");
+                return false;
+            }
+        }
 
         if (data !== roomName) {
             if (clients.size == 1) {
                 for (const id of clients) {
-                    io.to(id).emit("invite", { username: socket.username, id: socket.id });
+                    if (!PlayersRequest.get(id)) {
+                        PlayersRequest.set(id, socket.id);
+                        io.to(id).emit("invite", { username: socket.username, id: socket.id });
+                        io.to(socket.id).emit("ReturnRequestSuccess");
+                    } else {
+                        io.to(socket.id).emit("ReturnRequestWait"); //TODO Někdy změnit
+                    }
                 }
             } else if (clients.size == 2) {
-                //uživatelé již hrajou
+                io.to(socket.id).emit("ReturnRequestMaxPlayers");
             } else {
-                //TODO Error
+                console.log("FATAL ERROR [Připojilo se více klientů]");
             }
         }
     });
@@ -77,15 +77,21 @@ io.on("connection", socket => {
 
     socket.on("accept", data => {
         const dataSocket = io.sockets.sockets.get(data.id);
-        dataSocket.leave(dataSocket.ActivityRoom);
-        socket.Player = "Hrac1";
-        dataSocket.Player = "Hrac2";
-        dataSocket.ActivityRoom = roomName;
-        dataSocket.join(roomName);
-        io.to(roomName).emit("Ready");
+        if (dataSocket) {
+            PlayersRequest.delete(socket.id);
+            dataSocket.leave(dataSocket.ActivityRoom);
+            socket.Player = "Hrac1";
+            dataSocket.Player = "Hrac2";
+            dataSocket.ActivityRoom = socket.ActivityRoom;
+            dataSocket.join(socket.ActivityRoom);
+            io.to(socket.ActivityRoom).emit("Ready");
+        } else {
+            //Todo hráč se odpojil
+        }
     });
 
     socket.on("deny", data => {
+        PlayersRequest.delete(socket.id);
         io.to(data.id).emit("AcceptDeny", { username: socket.username });
     });
 
@@ -210,13 +216,15 @@ io.on("connection", socket => {
     }
     var intervatFun;
     socket.on("PingStart", () => {
-        const ZoneX = (socket.Player == "Hrac1") ? PlayerPos.Player1 : PlayerPos.Player2;
-        Hrac = new Player(ZoneX);
-        Koule = new Ball();
-        Players.set(socket.id, Hrac);
-        Balls.set(socket.ActivityRoom, Koule);
-        intervatFun = setInterval(function () { Render(socket.ActivityRoom); }, 33);
-        io.to(roomName).emit("START");
+        if (!Players.has(socket.id) || !Balls.has(socket.ActivityRoom)) {            
+            const ZoneX = (socket.Player == "Hrac1") ? PlayerPos.Player1 : PlayerPos.Player2;
+            Hrac = new Player(ZoneX);
+            Koule = new Ball();
+            Players.set(socket.id, Hrac);
+            Balls.set(socket.ActivityRoom, Koule);
+            intervatFun = setInterval(function () { Render(socket.ActivityRoom); }, 33);
+            io.to(socket.ActivityRoom).emit("START");
+        }
     });
 
 
@@ -247,12 +255,12 @@ io.on("connection", socket => {
             io.to(socketid).emit("PlayerMove", { x: Hrac1.x, y: Hrac1.y, x2: Hrac2.x, y2: Hrac2.y, heigth: Player.heigth, width: Player.width });
         }
         // else {
-        //     PlayerLeftGame(socketid);
+
         // }
     }
 
 
-
+    //More
     function GETPlayersDataSocketRoom() {
         const PlayersArray = GetRoomPlayers();
         if (PlayersArray) {
@@ -284,10 +292,6 @@ io.on("connection", socket => {
         return false;
     }
 
-    function GetSocketById(id) {
-        return io.sockets.sockets.get(id);
-    }
-
     function GetPlayerByRoom() {
         let PlayersID = io.sockets.adapter.rooms.get(socket.ActivityRoom);
         if (PlayersID) {
@@ -297,28 +301,40 @@ io.on("connection", socket => {
         }
     }
 
-    function PlayerLeftGame(socket) {
+    function PlayerLeftGame() {
         const dataSocket = io.sockets.sockets.get(GetPlayerByRoom());
         if (dataSocket) {
             io.to(dataSocket.id).emit("PlayerLeft");
             GetNewRoom(dataSocket);
-            clearInterval(intervatFun);
         }
     }
 
     function GetNewRoom(dataSocket) {
+        Players.delete(dataSocket.id);
         do {
             roomName = randomString();
         } while (io.sockets.adapter.rooms.get(roomName));
-        dataSocket.join(roomName);
+        if (dataSocket.ActivityRoom) {
+            dataSocket.leave(dataSocket.ActivityRoom);
+        }
         dataSocket.ActivityRoom = roomName;
+        dataSocket.join(roomName);
         dataSocket.Player = "none";
-        io.to(dataSocket).emit("id", { id: roomName });
+        io.to(dataSocket.id).emit("id", { id: roomName });
+    }
+    function randomString() {
+        const size = 5;
+        return crypto
+            .randomBytes(size)
+            .toString('hex')
+            .slice(0, size)
     }
 
     socket.on("disconnect", () => {
+        clearInterval(intervatFun);
+        Balls.delete(socket.ActivityRoom);
         Players.delete(socket.id);
-        PlayerLeftGame(socket)
+        PlayerLeftGame();
     });
 });
 
@@ -326,6 +342,14 @@ io.on("connection", socket => {
 
 
 
+
+
+
+//TODO
+
+//Ochrana při více spuštění (server)
+//Game status na serveru (Zabudovat do Ball) (server)
+//Ochrana proti více poslání pozvánek na 1 hráče (Server)
 
 
 

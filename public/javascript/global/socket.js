@@ -2,13 +2,9 @@ const socket = io();
 const Input1 = document.getElementById("inputglobalidex");
 const Input2 = document.getElementById("idinputglobal");
 const ButtonSend = document.getElementById("sessionbtn");
-//session.ejs
-const RequestWindow = document.getElementById("Request");
-const RequestWindow2 = document.getElementById("RequestDeny");
-const requestmessage = document.getElementById("RequestMainTable");
-const requestmessageDeny = document.getElementById("RequestDenyMainTable");
 const UserNameSetInput = document.getElementById("NameInput");
 //Socket
+let Socketdata;
 socket.on('id', data => {
     Input2.value = data.id;
     $("#idinputglobal").attr("disabled", "disabled");
@@ -27,18 +23,12 @@ socket.on("idcheck", data => {
         ZakazatOdeslani();
     }
 });
-
 socket.on("invite", data => {
-    OpenRequest(data.username);
-    $("#ButtonAccept").click(function () {
-        AcceptRequest(data);
-        CloseRequest();
-    });
-    $("#ButtonDeny").click(function () {
-        DenyRequest(data);
-        CloseRequest();
-    });
+    RequestSend(data.username);
+    Socketdata = data;
 });
+
+
 
 socket.on("getusername", data => {
     document.getElementById("clientusername").innerText = data;
@@ -46,10 +36,10 @@ socket.on("getusername", data => {
 });
 
 socket.on("AcceptDeny", data => {
-    OpenRequestDeny(data.username);
+    RequestDeny(data.username);
 });
 
-socket.on("PlayerLeft", data => {
+socket.on("PlayerLeft", () => {
     Game.Player = false;
     ctx.clearRect(0, 0, okno.ln, okno.lp);
     Input1.value = "";
@@ -60,34 +50,28 @@ $("#sessionbtn").click(function () {
     socket.emit("request", Input1.value);
 });
 
+socket.on("ReturnRequestExist", () => {
+    RequestExistAlert();
+});
+
+socket.on("ReturnRequestSuccess", () => {
+    RequestSuccessAlert();  
+});
+
+socket.on("ReturnRequestMaxPlayers", () => {
+    RequestMaxPlayers();
+});
+
+socket.on("ReturnRequestWait", () => {
+    RequestWait();
+});
 $("#inputglobalidex").on("change paste keyup", function () {
     socket.emit("idcheck", Input1.value);
 });
 
-$("#ButtonOkDeny").click(function () {
-    CloseRequestDeny();
-});
+
+
 //Funkce
-function OpenRequest(name) {
-    const txt = " se chce připojit do hry";
-    requestmessage.innerText = name + txt;
-    RequestWindow.style.transform = "scale(1)";
-}
-
-function OpenRequestDeny(name) {
-    const txt = " nepříjmul vaší pozvánku";
-    requestmessageDeny.innerText = name + txt;
-    RequestWindow2.style.transform = "scale(1)";
-}
-
-function CloseRequest() {
-    RequestWindow.style.transform = "scale(0)";
-}
-
-function CloseRequestDeny() {
-    RequestWindow2.style.transform = "scale(0)";
-}
-
 function AcceptRequest(data) {
     socket.emit("accept", { username: data.username, id: data.id });
 }
@@ -106,6 +90,7 @@ function PovolitOdeslani() {
     ButtonSend.style.border = "#40b484 2px solid";
     document.querySelector("button").style.cursor = 'pointer'
 }
+
 function ZakazatOdeslani() {
     $("#sessionbtn").prop('disabled', true);
     ButtonSend.style.border = "#7f8c8d 2px solid";
