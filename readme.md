@@ -27,7 +27,7 @@ PORT=8080
 ***
 ## Celé fungování hry
 * Při připojení do hry se automaticky vygeneruje základní informace o hráči ve funkci GetNewRoom()
-    * ActivityRoom = RoomId ve které se uživatel nachází
+    * ActivityRoom = Room id ve které se uživatel nachází
     * Player = Ve hře - Rozlišení zda je hráč "Hrac1" nebo "Hrac1" 
 * Při requestu
     * Kontroluje se zda zadané room id není room id zadavatele 
