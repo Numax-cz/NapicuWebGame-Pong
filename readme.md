@@ -69,9 +69,9 @@ PORT=8080
     * Kontroluje zda MoveKey.Up nebo MoveKey.Down je true
     * Zda je MoveKey.Up nebo MoveKey.Down true pošle se emit serveru PlayerMoveUp nebo PlayerMoveDown
 * Při PlayerMoveUp
-    * Hráč se posune nahoru 
+    * Hráč se posune nahorů
 * Při PlayerMoveDown
-    * Hrac se posune dolů
+    * Hráč se posune dolů
 * Player.Render() function 
     * Spustí se funkce Player.Get(), která pošle emit PlayerUpdate který na serveru hýbe hráčem
     * Zda dostane PlayerMove uloží se u klienta údaje o hráčovi
