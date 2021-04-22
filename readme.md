@@ -10,7 +10,7 @@
 * Hráč 1 pošle kód  Hráči 2, který ho následně zadá do kolonky Připojit se
 * Jestli kód opsal správně půjde odestal pozvánka
 
-* `Informace` 
+* Informace
     * Pozvánka můžete poslat pouze hráči, který ještě žádnou pozvánku nedostal
     * Nelze pozvat hráče, který již hraje
     * Hra se automaticky ukončí, když 1 z hráčů odpojí hru. Druhému hráči se automaticky vygeneruje nový kód 
