@@ -2,7 +2,6 @@ require("dotenv").config();
 const express = require("express");
 const app = express();
 const crypto = require('crypto');
-
 const server = app.listen(process.env.PORT, () => {
     console.log("Aplikace běží na portu: " + process.env.PORT);
 });
@@ -37,7 +36,7 @@ app.get("/", (req, res) => {
 var Players = new Map();
 var Balls = new Map();
 var PlayersRequest = new Map();
-
+var Requests = new Map();
 
 
 io.on("connection", socket => {
@@ -63,7 +62,7 @@ io.on("connection", socket => {
                         io.to(id).emit("invite", { username: socket.username, id: socket.id });
                         io.to(socket.id).emit("ReturnRequestSuccess");
                     } else {
-                        io.to(socket.id).emit("ReturnRequestWait"); //TODO Někdy změnit
+                        io.to(socket.id).emit("ReturnRequestWait"); //todo
                     }
                 }
             } else if (clients.size == 2) {
@@ -132,12 +131,13 @@ io.on("connection", socket => {
             this.SpeedX = this.Random();
             this.SpeedY = this.Random();
             this.BallColor = "#ecf0f1";
+            this.ScorePlayer1 = 0;
+            this.ScorePlayer2 = 0;
         }
 
 
 
         Render() {
-            // this.PlayerCollision();
             this.Collision();
             this.Move();
         }
@@ -146,11 +146,13 @@ io.on("connection", socket => {
             this.velY += this.SpeedY;
         }
         Collision() {
-            if ((this.velX + this.Size) >= okno.ln) {
-                this.Start(); //Player? Game Over - -
-            }
             if ((this.velX - this.Size) <= 0) {
-                this.Start(); //Player? Game Over - -
+                this.ScorePlayer2 += 1;
+                this.ScoreUpdate();
+            }
+            if ((this.velX + this.Size) >= okno.ln) {
+                this.ScorePlayer1 += 1;
+                this.ScoreUpdate();
             }
             if ((this.velY + this.Size) >= okno.lp) {
                 this.SpeedY = -(this.SpeedY);
@@ -160,7 +162,10 @@ io.on("connection", socket => {
             }
         }
 
-
+        ScoreUpdate() {
+            io.to(roomName).emit("ScoreUpdate", { player1: this.ScorePlayer1, player2: this.ScorePlayer2 });
+            this.Start();
+        }
 
         Reverse() {
             this.SpeedY = - (this.SpeedY);
@@ -207,19 +212,23 @@ io.on("connection", socket => {
 
 
     function Render(socketid) {
+
         if (GetRoomPlayers()) {
-            Koule.Render();
             let SocketKoule = Balls.get(socketid)
-            io.to(socketid).emit("BallMove", { velX: SocketKoule.velX, velY: SocketKoule.velY, size: SocketKoule.Size, color: SocketKoule.BallColor });
-            PlayerPush(socketid);
+            if (!SocketKoule.pause) {
+                Koule.Render();
+                io.to(socketid).emit("BallMove", { velX: SocketKoule.velX, velY: SocketKoule.velY, size: SocketKoule.Size, color: SocketKoule.BallColor });
+                PlayerPush(socketid);
+            }
         }
     }
     var intervatFun;
     socket.on("PingStart", () => {
-        if (!Players.has(socket.id) || !Balls.has(socket.ActivityRoom)) {            
+        if (!Players.has(socket.id) || !Balls.has(socket.ActivityRoom)) {
             const ZoneX = (socket.Player == "Hrac1") ? PlayerPos.Player1 : PlayerPos.Player2;
             Hrac = new Player(ZoneX);
             Koule = new Ball();
+            Koule.pause = false;
             Players.set(socket.id, Hrac);
             Balls.set(socket.ActivityRoom, Koule);
             intervatFun = setInterval(function () { Render(socket.ActivityRoom); }, 33);
@@ -248,15 +257,54 @@ io.on("connection", socket => {
         }
     });
 
+    socket.on("BtnLeft", () => {
+        Left();
+        var array = GetRoomPlayers();
+        io.to(socket.ActivityRoom).emit("PlayerLeft");
+        for (var i = 0; i < array.length; i++) {
+            let dataSocket = io.sockets.sockets.get(array[i]);
+            GetNewRoom(dataSocket);
+        }
+    });
+
+    socket.on("BtnPause", () => {
+        let PlayersArray = GetRoomPlayers();
+        let TargetID = (socket.Player == "Hrac1") ? PlayersArray[1] : PlayersArray[0]
+        let dataSocket = io.sockets.sockets.get(TargetID);
+        let koule = Balls.get(dataSocket.ActivityRoom);
+        Requests.set(dataSocket.id, socket.id);
+        koule.RequestPause = Requests;
+        io.to(dataSocket.id).emit("RequestPauseGame");
+    });
+
+    socket.on("GamePauseAccept", () => {
+        let koule = Balls.get(socket.ActivityRoom);
+        koule.pause = true;
+        let PlayersArray = GetRoomPlayers();
+        let Name0 = io.sockets.sockets.get(PlayersArray[0]).username;
+        let Name1 = io.sockets.sockets.get(PlayersArray[1]).username;
+        io.to(socket.ActivityRoom).emit("GamePaused", {name0: Name0, name1: Name1});
+    });
+
+    socket.on("GamePauseDeny", () => {
+
+    });
+
+    socket.on("BtnReset", () => {
+
+    });
+
+    socket.on("BtnGibeUp", () => {
+
+    });
+
+
     function PlayerPush(socketid) {
         var Hrac1 = GETPlayersDataSocketRoom().Hrac1;
         var Hrac2 = GETPlayersDataSocketRoom().Hrac2;
         if (Hrac1 && Hrac2) {
             io.to(socketid).emit("PlayerMove", { x: Hrac1.x, y: Hrac1.y, x2: Hrac2.x, y2: Hrac2.y, heigth: Player.heigth, width: Player.width });
         }
-        // else {
-
-        // }
     }
 
 
@@ -301,13 +349,15 @@ io.on("connection", socket => {
         }
     }
 
-    function PlayerLeftGame() {
+    function OnePlayerLeftGame() {
         const dataSocket = io.sockets.sockets.get(GetPlayerByRoom());
         if (dataSocket) {
-            io.to(dataSocket.id).emit("PlayerLeft");
+            io.to(dataSocket.ActivityRoom).emit("PlayerLeft");
             GetNewRoom(dataSocket);
         }
     }
+
+
 
     function GetNewRoom(dataSocket) {
         Players.delete(dataSocket.id);
@@ -330,11 +380,23 @@ io.on("connection", socket => {
             .slice(0, size)
     }
 
-    socket.on("disconnect", () => {
+    function Left() {
         clearInterval(intervatFun);
         Balls.delete(socket.ActivityRoom);
         Players.delete(socket.id);
-        PlayerLeftGame();
+    }
+
+
+
+
+
+
+
+
+
+    socket.on("disconnect", () => {
+        Left();
+        OnePlayerLeftGame();
     });
 });
 
@@ -345,11 +407,16 @@ io.on("connection", socket => {
 
 
 
-//TODO
 
-//Ochrana při více spuštění (server)
-//Game status na serveru (Zabudovat do Ball) (server)
-//Ochrana proti více poslání pozvánek na 1 hráče (Server)
+//TODO Client
+
+//Změna name
+// Enter pro potvrzení
+// Povolit pouze pár mist. jméno 
+// Zakázat mezery
 
 
+//TODO Server
+//Kolize
+//Řáden 269 - Kontrola zda je hráč v roomce 
 

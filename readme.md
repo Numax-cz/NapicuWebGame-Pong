@@ -91,7 +91,7 @@ PORT=8080
 * GETPlayersDataSocketRoom() vrátí údaje hráčů v roomce
 * GetRoomPlayers() vrátí socket id hráčů v roomce
 * GetPlayerByRoom() vrátí socket id prvního hráče v roomce
-* PlayerLeftGame() Pošle do roomky emit PlayerLeft a spustí funkci GetNewRoom()
+* OnePlayerLeftGame() Pošle hráči, který zůstal v roomce emit PlayerLeft a spustí funkci GetNewRoom()
 * GetNewRoom() vygeneruje základní údaje (roomName, Player)
 ***
 

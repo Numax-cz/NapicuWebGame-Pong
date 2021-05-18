@@ -3,8 +3,10 @@ const Input1 = document.getElementById("inputglobalidex");
 const Input2 = document.getElementById("idinputglobal");
 const ButtonSend = document.getElementById("sessionbtn");
 const UserNameSetInput = document.getElementById("NameInput");
+const Score1 = document.getElementById("Score1");
+const Score2 = document.getElementById("Score2");
 //Socket
-let Socketdata;
+var Socketdata;
 socket.on('id', data => {
     Input2.value = data.id;
     $("#idinputglobal").attr("disabled", "disabled");
@@ -50,12 +52,28 @@ $("#sessionbtn").click(function () {
     socket.emit("request", Input1.value);
 });
 
+$("#SettingsButton-Left").click(function () {
+    RequestLeft();
+});
+
+$("#SettingsButton-Pause").click(function () {
+    RequestPause();
+});
+
+$("#SettingsButton-Reset").click(function () {
+    RequestReset();
+});
+
+$("SettingsButton-GiveUp").click(function () {
+    RequestGiveUp();
+});
+
 socket.on("ReturnRequestExist", () => {
     RequestExistAlert();
 });
 
 socket.on("ReturnRequestSuccess", () => {
-    RequestSuccessAlert();  
+    RequestSuccessAlert();
 });
 
 socket.on("ReturnRequestMaxPlayers", () => {
@@ -65,11 +83,23 @@ socket.on("ReturnRequestMaxPlayers", () => {
 socket.on("ReturnRequestWait", () => {
     RequestWait();
 });
+
+socket.on("RequestPauseGame", () => {
+    RequestPauseAsk();
+});
+
+socket.on("ScoreUpdate", (data) => {
+    Score1.innerText = data.player1;
+    Score2.innerText = data.player2;
+});
+
+socket.on("GamePaused", (data) => {
+    
+});
+
 $("#inputglobalidex").on("change paste keyup", function () {
     socket.emit("idcheck", Input1.value);
 });
-
-
 
 //Funkce
 function AcceptRequest(data) {

@@ -1,13 +1,13 @@
-
+const color = '#f5f6fa';
+const position = "bottom-end"
 function Alert(txt, icon, confirm) {
     const timer = (confirm !== false) ? false : 2000;
-
     const Alert = Swal.mixin({
         toast: true,
-        position: 'bottom-end',
+        position: position,
         showConfirmButton: confirm,
         timer: timer,
-        background: '#f5f6fa',
+        background: color,
         timerProgressBar: false,
     });
     Alert.fire({
@@ -16,14 +16,18 @@ function Alert(txt, icon, confirm) {
     });
 }
 
+
+
+
+
 function AlertRequest(txt) {
     const Alert = Swal.mixin({
         toast: true,
-        position: 'bottom-end',
+        position: position,
         showConfirmButton: true,
         showCancelButton: true,
         timer: false,
-        background: '#f5f6fa',
+        background: color,
         timerProgressBar: false,
         confirmButtonText: "Příjmout",
         cancelButtonText: "Odmítnout",
@@ -39,6 +43,34 @@ function AlertRequest(txt) {
         }
     });
 }
+
+function AlertRequestButtons(txt, emit, emit2) {
+    const Alert = Swal.mixin({
+        toast: true,
+        position: position,
+        showConfirmButton: true,
+        showCancelButton: true,
+        timer: false,
+        background: color,
+        timerProgressBar: false,
+        confirmButtonText: "Ano",
+        cancelButtonText: "Ne",
+    });
+    Alert.fire({
+        icon: "info",
+        title: txt,
+    }).then((i) => {
+        if (i.isConfirmed) {
+            socket.emit(emit);
+        } else if (emit2) {
+            socket.emit(emit2);
+        }
+    });
+}
+function AlertButtons(txt) {
+
+}
+
 
 function PlayerLeftAlert() {
     Alert("Hráč se odpojil", "info", false);
@@ -68,3 +100,22 @@ function RequestWait() {
     Alert("Hráče již někdo pozval", "info", true);
 }
 
+function RequestLeft() {
+    AlertRequestButtons("Opravdu chcete opustit hru?", "BtnLeft");
+}
+
+function RequestPause() {
+    AlertRequestButtons("Opravdu chcete pauzu hry?", "BtnPause");
+}
+
+function RequestReset() {
+    AlertRequestButtons("Opravdu chcete restart hry?", "BtnReset");
+}
+
+function RequestGiveUp() {
+    AlertRequestButtons("Opravdu se chcete vzdát?", "BtnGiveUp");
+}
+
+function RequestPauseAsk() {
+    AlertRequestButtons("Hráč požádal o pauzu hry", "GamePauseAccept","GamePauseDeny");
+}
